@@ -51,7 +51,6 @@ extension HomeViewController {
         var requestURL = URLRequest(url: (urlComponents?.url)!)
         requestURL.httpMethod = "POST" // POST
         
-        
         let boundary = "Boundary-\(UUID().uuidString)"
         requestURL.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         
@@ -75,7 +74,6 @@ extension HomeViewController {
             )
         }
         
-        
         httpBody.appendString("--\(boundary)--")
         requestURL.httpBody = httpBody as Data
         
@@ -87,7 +85,6 @@ extension HomeViewController {
                 if statusCode == 201 {
                     DispatchQueue.main.async { // main thread에서 동작하도록 함
                         self.failNoti(title: "업로드 완료", desc: "이미지 업로드를 성공적으로 마쳤습니다.")
-                        
                     }
                     
                 } else if statusCode == 401 {
@@ -241,7 +238,6 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
             }
         }
         
-            
         return cell
     }
     

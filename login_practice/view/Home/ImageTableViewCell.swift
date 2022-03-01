@@ -9,6 +9,5 @@ import UIKit
 
 class ImageTableViewCell: UITableViewCell {
     @IBOutlet weak var imageSrc: UIImageView!
-    
     @IBOutlet weak var message: UILabel!
 }

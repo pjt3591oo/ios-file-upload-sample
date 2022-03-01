@@ -6,7 +6,6 @@
 //
 
 import UIKit
-//import Alamofire
 
 class LoginViewController: UIViewController {
 
@@ -48,22 +47,17 @@ class LoginViewController: UIViewController {
         let jsonData = try! JSONSerialization.data(withJSONObject: dicData!, options: [])
         
         var requestURL = URLRequest(url: (urlComponents?.url)!)
-        requestURL.httpMethod = "POST" // POST
+        requestURL.httpMethod = "POST"
         requestURL.httpBody = jsonData
         requestURL.addValue("application/json", forHTTPHeaderField: "Content-Type") // POST
         
         let task = URLSession.shared.dataTask(with: requestURL) { (data, response, error) in
             
-//            let successsRange = 200..<300
             if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                print(statusCode)
-                if statusCode == 201 {
-                    DispatchQueue.main.async { // main thread에서 동작하도록 함
+                DispatchQueue.main.async { // main thread에서 동작하도록 함
+                    if statusCode == 201 {
                         self.moveToHomePage()
-                    }
-                    
-                } else if statusCode == 401 {
-                    DispatchQueue.main.async { // main thread에서 동작하도록 함
+                    } else if statusCode == 401 {
                         self.failNoti(title: "로그인 실패", desc: "아이디와 비밀번호가 일치하지 않습니다.")
                     }
                 }
@@ -71,9 +65,6 @@ class LoginViewController: UIViewController {
         }
         
         task.resume()
-        
-        
-        // failNoti(title: "로그인 실패", desc: "아이디와 비밀번호가 일치하지 않습니다.")
     }
     
     func failNoti(title: String, desc: String) {
