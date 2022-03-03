@@ -36,6 +36,9 @@ class HomeViewController: UIViewController {
         ImageTableView.delegate = self
         ImageTableView.dataSource = self
         
+        // cell 내부에 따라 height를 유동적으로 바꿔줌
+        ImageTableView.rowHeight = UITableView.automaticDimension
+        
         imagePickerController.delegate = self
         
         PHPhotoLibrary.requestAuthorization { status in }
@@ -131,9 +134,14 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         
         self.imageViewModel.getImageByNetwork(idx: indexPath.row, success: {(data: Data) -> Void in 
             DispatchQueue.main.async {
-                cell.imageSrc.image = UIImage(data: data)
-                let cellImgSize: Array<Double> = cell.getImageSize() // 0: width, 1: height
-                cell.message.text = "\(cellImgSize[0]) * \(cellImgSize[1])"
+                let temp = UIImage(data: data)
+                let cellImgWidth:CGFloat = CGFloat(temp?.size.width ?? 0.0)
+                let cellImgHeight:CGFloat = CGFloat(temp?.size.height ?? 0.0)
+                let rate:CGFloat = self.ImageTableView.frame.width / cellImgWidth
+                
+                // resize가 되면서 상당히 버벅거림
+                cell.imageSrc.image = UIImage(data: data)?.resizeTopAlignedToFill(newWidth: cellImgWidth * rate, newHeight: cellImgHeight * rate)
+                cell.message.text = "\(Int(cellImgWidth * rate)) * \(Int(cellImgHeight * rate))"
             }
         }, fail: {() -> Void in
             
@@ -142,8 +150,22 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return self.ImageTableView.frame.width
+//    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+//        return self.ImageTableView.frame.width
+//    }
+}
+
+extension UIImage {
+    func resizeTopAlignedToFill(newWidth: CGFloat, newHeight: CGFloat) -> UIImage? {
+
+        let newSize = CGSize(width: newWidth, height: newHeight)
+
+        UIGraphicsBeginImageContextWithOptions(newSize, true, UIScreen.main.scale)
+        draw(in: CGRect(origin: .zero, size: newSize))
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return newImage
     }
 }
 
