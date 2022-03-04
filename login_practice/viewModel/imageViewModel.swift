@@ -7,6 +7,11 @@
 
 import UIKit
 
+class ImageCacheManager {
+    static let shared = NSCache<NSString, UIImage>()
+    private init() {}
+}
+
 class ImageViewModel: ImageViewModelProtocol {
     var images: Array<Image> = []
     
@@ -14,12 +19,28 @@ class ImageViewModel: ImageViewModelProtocol {
     
     required init() { }
     
-    func getImageByNetwork(idx: Int, success: (_ data: Data) -> Void, fail: () -> Void) {
+    func getImageByNetwork(idx: Int, success: (_ data: UIImage) -> Void, fail: () -> Void) {
+        
+        let filePath: String = self.images[idx].path
+        // 캐시에 사용될 Key 값
+        let cacheKey = NSString(string: filePath)
+        
+        // 캐시확인
+        if let cachedImage = ImageCacheManager.shared.object(forKey: cacheKey) { // 해당 Key 에 캐시이미지가 저장되어 있으면 이미지를 사용
+            success(cachedImage)
+            return
+        }
+        
         do {
             // background
-            if let data = try? Data(contentsOf: URL(string: "http://127.0.0.1:3000/\(self.images[idx].path)")!) {
+            if let data = try? Data(contentsOf: URL(string: "http://127.0.0.1:3000/\(filePath)")!) {
                 // main tread
-                success(data)
+                if let image = UIImage(data: data) {
+                    // 캐시저장
+                    ImageCacheManager.shared.setObject(image, forKey: cacheKey)
+                    success(image)
+                }
+                fail()
             }
         } catch {
             fail()

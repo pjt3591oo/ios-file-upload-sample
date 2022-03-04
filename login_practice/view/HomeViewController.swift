@@ -14,7 +14,7 @@ class HomeViewController: UIViewController {
     let imagePickerController = UIImagePickerController()
     
     @IBOutlet weak var ImageTableView: UITableView!
-    
+
     var imageViewModel: ImageViewModel!
     var imgPhoto: UIImageView?
     var images: Array<Dictionary<String, Any>>?
@@ -131,16 +131,15 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = ImageTableView.dequeueReusableCell(withIdentifier: "ImageTableViewCell", for:indexPath) as! ImageTableViewCell
-        
-        self.imageViewModel.getImageByNetwork(idx: indexPath.row, success: {(data: Data) -> Void in 
+        print("render: \(indexPath)")
+        self.imageViewModel.getImageByNetwork(idx: indexPath.row, success: {(temp: UIImage) -> Void in
+            let cellImgWidth:CGFloat = CGFloat(temp.size.width)
+            let cellImgHeight:CGFloat = CGFloat(temp.size.height)
+            let rate:CGFloat = self.ImageTableView.frame.width / cellImgWidth
+            let image = temp.resizeTopAlignedToFill(newWidth: cellImgWidth * rate, newHeight: cellImgHeight * rate)
             DispatchQueue.main.async {
-                let temp = UIImage(data: data)
-                let cellImgWidth:CGFloat = CGFloat(temp?.size.width ?? 0.0)
-                let cellImgHeight:CGFloat = CGFloat(temp?.size.height ?? 0.0)
-                let rate:CGFloat = self.ImageTableView.frame.width / cellImgWidth
-                
                 // resize가 되면서 상당히 버벅거림
-                cell.imageSrc.image = UIImage(data: data)?.resizeTopAlignedToFill(newWidth: cellImgWidth * rate, newHeight: cellImgHeight * rate)
+                cell.imageSrc.image = image
                 cell.message.text = "\(Int(cellImgWidth * rate)) * \(Int(cellImgHeight * rate))"
             }
         }, fail: {() -> Void in
