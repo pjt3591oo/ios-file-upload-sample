@@ -132,16 +132,9 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = ImageTableView.dequeueReusableCell(withIdentifier: "ImageTableViewCell", for:indexPath) as! ImageTableViewCell
         print("render: \(indexPath)")
-        self.imageViewModel.getImageByNetwork(idx: indexPath.row, success: {(temp: UIImage) -> Void in
-            let cellImgWidth:CGFloat = CGFloat(temp.size.width)
-            let cellImgHeight:CGFloat = CGFloat(temp.size.height)
-            let rate:CGFloat = self.ImageTableView.frame.width / cellImgWidth
-            let image = temp.resizeTopAlignedToFill(newWidth: cellImgWidth * rate, newHeight: cellImgHeight * rate)
-            DispatchQueue.main.async {
-                // resize가 되면서 상당히 버벅거림
-                cell.imageSrc.image = image
-                cell.message.text = "\(Int(cellImgWidth * rate)) * \(Int(cellImgHeight * rate))"
-            }
+        self.imageViewModel.getImageByNetwork(idx: indexPath.row, resizeWidth: self.ImageTableView.frame.width, success: {(image: UIImage) -> Void in
+            cell.imageSrc.image = image
+            cell.message.text = "\(Int(image.size.width)) * \(Int(image.size.height))"
         }, fail: {() -> Void in
             
         })
@@ -149,23 +142,6 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
-//    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        return self.ImageTableView.frame.width
-//    }
-}
-
-extension UIImage {
-    func resizeTopAlignedToFill(newWidth: CGFloat, newHeight: CGFloat) -> UIImage? {
-
-        let newSize = CGSize(width: newWidth, height: newHeight)
-
-        UIGraphicsBeginImageContextWithOptions(newSize, true, UIScreen.main.scale)
-        draw(in: CGRect(origin: .zero, size: newSize))
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-
-        return newImage
-    }
 }
 
 extension HomeViewController {
