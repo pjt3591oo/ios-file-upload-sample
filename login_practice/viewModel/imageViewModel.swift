@@ -26,13 +26,12 @@ class ImageViewModel: ImageViewModelProtocol {
         let cacheKey = NSString(string: filePath)
         
         // 캐시확인
-        if let cachedImage = ImageCacheManager.shared.object(forKey: cacheKey) { // 해당 Key 에 캐시이미지가 저장되어 있으면 이미지를 사용
+        if let cachedImage = ImageCacheManager.shared.object(forKey: cacheKey) { // 해당 Key 에
             success(cachedImage)
             return
         }
         
         do {
-            // background
             if let data = try? Data(contentsOf: URL(string: "http://127.0.0.1:3000/\(filePath)")!) {
                 // main tread
                 if var image = UIImage(data: data) {
@@ -46,6 +45,7 @@ class ImageViewModel: ImageViewModelProtocol {
                     
                     ImageCacheManager.shared.setObject(image, forKey: cacheKey)
                     success(image)
+                    return
                 }
                 fail()
             }

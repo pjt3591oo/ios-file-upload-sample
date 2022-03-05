@@ -199,11 +199,6 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Qsv-SU-P9d">
-                        <barButtonItem key="leftBarButtonItem" style="plain" systemItem="refresh" id="0Zh-cn-XHG">
-                            <connections>
-                                <action selector="onClickReloadHandler:" destination="rSK-Sl-RaG" id="5WI-dq-hF1"/>
-                            </connections>
-                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" style="plain" id="cph-iD-i9L">
                             <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="fgG-8E-LBR">
                                 <rect key="frame" x="302" y="5" width="92" height="34.5"/>

@@ -9,8 +9,8 @@ import UIKit
 import Photos
 
 // deletegate, datasource 프로토콜을 채택한 extension 영역은 어느 레이어에서 관리를해야할 까
-
 class HomeViewController: UIViewController {
+    let refreshControl = UIRefreshControl()
     let imagePickerController = UIImagePickerController()
     
     @IBOutlet weak var ImageTableView: UITableView!
@@ -24,10 +24,6 @@ class HomeViewController: UIViewController {
             self.checkAlbumPermission()
     }
     
-    @IBAction func onClickReloadHandler(_ sender: Any) {
-        print("reload?")
-        self.getLoadData()
-    }
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -39,12 +35,67 @@ class HomeViewController: UIViewController {
         // cell 내부에 따라 height를 유동적으로 바꿔줌
         ImageTableView.rowHeight = UITableView.automaticDimension
         
+        self.initRefresh()
+        
+        if #available(iOS 10.0, *) {
+            ImageTableView.refreshControl = refreshControl
+        } else {
+            ImageTableView.addSubview(refreshControl)
+        }
+        
         imagePickerController.delegate = self
         
         PHPhotoLibrary.requestAuthorization { status in }
         AVCaptureDevice.requestAccess(for: .video) { granted in }
         
         self.getLoadData()
+    }
+}
+
+// 리프레시 컨트롤
+extension HomeViewController {
+    func initRefresh() {
+        self.refreshControl.addTarget(self, action: #selector(refreshTable(refresh:)), for: .valueChanged)
+        self.refreshStyle()
+        self.ImageTableView.refreshControl = self.refreshControl
+    }
+    
+    func refreshStyle() {
+        self.refreshControl.backgroundColor = UIColor.clear
+
+        self.refreshControl.attributedTitle = NSAttributedString(string: "Loading Images",
+                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.systemGray, NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 14)])
+    }
+    
+    @objc func refreshTable(refresh: UIRefreshControl) {
+        let originCount: Int = self.imageViewModel.images.count
+        
+        if self.refreshControl.isRefreshing == true {
+            self.imageViewModel.loadData(success:{() -> Void in
+                DispatchQueue.main.async { // main thread에서 동작하도록 함
+                    self.ImageTableView.reloadData()
+                    let count: Int = self.imageViewModel.images.count
+                    print("origin count: \(originCount), new count\(count)")
+                    if originCount == count {
+                        refresh.endRefreshing()
+                    } else {
+                        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() ) { [weak self] in
+                            refresh.endRefreshing()
+                        }
+                    }
+                    
+                }
+            }, fail: {() -> Void in
+                
+            })
+        }
+    }
+ 
+    //MARK: - UIRefreshControl of ScrollView
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        if(velocity.y < -0.1) {
+            self.refreshTable(refresh: self.refreshControl)
+        }
     }
 }
 
@@ -56,7 +107,7 @@ extension HomeViewController {
                 TowButtonNotification(target: self, title: "업로드 완료", desc: "이미지 업로드를 성공적으로 마쳤습니다.", confirmHandler: {() -> Void in
                     self.getLoadData()
                 }, cancelHandler: {() -> Void in
-                    self.getLoadData()
+                    self.ImageTableView.reloadData()
                 })
             }
         }, fail: {() -> Void in
@@ -131,7 +182,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = ImageTableView.dequeueReusableCell(withIdentifier: "ImageTableViewCell", for:indexPath) as! ImageTableViewCell
-        print("render: \(indexPath)")
+        
         self.imageViewModel.getImageByNetwork(idx: indexPath.row, resizeWidth: self.ImageTableView.frame.width, success: {(image: UIImage) -> Void in
             cell.imageSrc.image = image
             cell.message.text = "\(Int(image.size.width)) * \(Int(image.size.height))"

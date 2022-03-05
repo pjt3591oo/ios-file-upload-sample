@@ -30,8 +30,8 @@
             filePath = "login_practice/view/HomeViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "87"
-            endingLineNumber = "87"
+            startingLineNumber = "138"
+            endingLineNumber = "138"
             landmarkName = "checkAlbumPermission()"
             landmarkType = "7">
          </BreakpointContent>
