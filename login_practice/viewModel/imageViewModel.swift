@@ -57,10 +57,10 @@ class ImageViewModel: ImageViewModelProtocol {
     func loadData(success:  @escaping () -> Void, fail:  @escaping () -> Void) {
         let queryString: Dictionary<String, Any> = [:]
         
-        self.network.getRequest(path: "/file", queryString: queryString, completion: {(_ data: Data?, _ response: URLResponse?, _ error:Error?) -> Void in
+        self.network.getRequest(path: "/file", queryString: queryString, completion: {(_ data: Any?) -> Void in
             do {
                 if let jsonData = data {
-                    let images = try JSONDecoder().decode(Array<Image>.self, from: jsonData)
+                    let images = try JSONDecoder().decode(Array<Image>.self, from: jsonData as! Data)
                     self.images = images
                 }
                 success()
@@ -71,15 +71,13 @@ class ImageViewModel: ImageViewModelProtocol {
     }
     
     func upload(img: UIImage, success: @escaping () -> Void, fail: @escaping () -> Void) {
-        self.network.fileUpload(path: "/file", imgs: [img], payload: [[:]], completion: {(_ data: Data?, _ response: URLResponse?, _ error:Error?) -> Void in
+        self.network.fileUpload(path: "/file", img: img, payload: [[:]], completion: {(isSuccess: Bool) -> Void in
             do {
-                if let statusCode = (response as? HTTPURLResponse)?.statusCode {
-                   if statusCode == 201 {
-                       success()
-                   } else if statusCode == 401 {
-                       fail()
-                   }
-               }
+                if (isSuccess == true) {
+                    success()
+                } else {
+                    fail()
+                }
             } catch {
                 fail()
             }
